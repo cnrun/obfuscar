@@ -720,31 +720,38 @@ namespace Obfuscar
                     continue;
                 }
 
-                foreach (DictionaryEntry entry in reader.Cast<DictionaryEntry>().OrderBy(e => e.Key.ToString()))
+                try
                 {
-                    if (entry.Key.ToString().EndsWith(".baml", StringComparison.OrdinalIgnoreCase))
+                    foreach (DictionaryEntry entry in reader.Cast<DictionaryEntry>().OrderBy(e => e.Key.ToString()))
                     {
-                        Stream stream;
-                        var value = entry.Value as Stream;
-                        if (value != null)
-                            stream = value;
-                        else if (entry.Value is byte[])
-                            stream = new MemoryStream((byte[]) entry.Value);
-                        else
-                            continue;
+                        if (entry.Key.ToString().EndsWith(".baml", StringComparison.OrdinalIgnoreCase))
+                        {
+                            Stream stream;
+                            var value = entry.Value as Stream;
+                            if (value != null)
+                                stream = value;
+                            else if (entry.Value is byte[])
+                                stream = new MemoryStream((byte[]) entry.Value);
+                            else
+                                continue;
 
-                        try
-                        {
-                            result.Add(BamlReader.ReadDocument(stream, CancellationToken.None));
-                        }
-                        catch (ArgumentException)
-                        {
-                        }
-                        catch (FileNotFoundException)
-                        {
+                            try
+                            {
+                                result.Add(BamlReader.ReadDocument(stream, CancellationToken.None));
+                            }
+                            catch (ArgumentException)
+                            {
+                            }
+                            catch (FileNotFoundException)
+                            {
+                            }
                         }
                     }
                 }
+                catch (FileNotFoundException)
+                {
+                    Console.WriteLine($"can't scan {library.FullName}");
+                }                
             }
 
             return result;
